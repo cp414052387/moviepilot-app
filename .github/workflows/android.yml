@@ -15,56 +15,39 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up JDK
+      - name: Set up Java
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '17'
-          cache: 'gradle'
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
           flutter-version: '3.38.9'
-          cache: true
 
       - name: Get Flutter dependencies
         run: flutter pub get
 
-      - name: Build APK (Debug)
-        run: |
-          cd android
-          echo "Starting debug build..."
-          ./gradlew assembleDebug --stacktrace --info
-        continue-on-error: true
+      - name: Build Debug APK
+        run: flutter build apk --debug --verbose
 
-      - name: Build APK (Release)
-        run: |
-          cd android
-          echo "Starting release build..."
-          ./gradlew assembleRelease --stacktrace --info
-        continue-on-error: true
-
-      - name: Find APK files
-        if: always()
-        run: |
-          echo "Finding APK files..."
-          find build/app/outputs/flutter-apk -name "*.apk" -type f
-          ls -R build/app/outputs/flutter-apk/
+      - name: Build Release APK
+        run: flutter build apk --release --verbose
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: app-debug
-          path: |
-            build/app/outputs/flutter-apk/app-debug.apk
-            build/app/outputs/flutter-apk/app-release.apk
+          path: build/app/outputs/flutter-apk/*.apk
+          if-no-files-found: warn
 
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: app-release
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: build/app/outputs/flutter-apk/*.apk
+          if-no-files-found: warn
