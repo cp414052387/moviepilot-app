@@ -1,0 +1,54 @@
+def flutterVersionCode = '1'
+def flutterVersionName = '1.0'
+
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
+
+android {
+    compileSdkVersion 34
+    ndkVersion flutter.ndkVersion
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    defaultConfig {
+        applicationId "com.moviepilot.moviepilot_app"
+        minSdkVersion flutter.minSdkVersion
+        targetSdkVersion flutter.targetSdkVersion
+        versionCode flutterVersionCode.toInteger()
+        versionName flutterVersionName
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            shrinkResources false
+        }
+    }
+
+    lintOptions {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+    }
+
+    packagingOptions {
+        jniLibs {
+            keepDebugSymbols += ['*/lib*.so']
+        }
+    }
+}
+
+flutter {
+    source '../..'
+}
