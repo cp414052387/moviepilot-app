@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "MoviePilot",
+    "slug": "moviepilot-mobile",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.moviepilot.app"
+    },
+    "android": {
+      "package": "com.moviepilot.app",
+      "permissions": []
+    },
+    "plugins": [],
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "2ca5c7d4-5c56-4357-aaab-1ea3292dd79e"
+      }
+    }
+  }
+}
