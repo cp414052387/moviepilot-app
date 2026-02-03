@@ -20,6 +20,7 @@
 
 ## Completed
 - [x] Project initialization
+- [x] Add themed loading screen for auth initialization
 
 ## Notes
 - Focus on MVP functionality first
