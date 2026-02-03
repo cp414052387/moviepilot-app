@@ -5,6 +5,7 @@
 - [ ] Define core data structures and types
 - [ ] Implement basic input/output handling
 - [ ] Create test framework and initial tests
+- [x] Enable AndroidX for Flutter Android build
 
 ## Medium Priority
 - [ ] Add error handling and validation
