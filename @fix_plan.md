@@ -21,7 +21,7 @@
 
 ## Completed
 - [x] Project initialization
-- [x] Add clipboard paste handling for magnet links
+- [x] Add completed download folder open handler with failure feedback
 
 ## Notes
 - Focus on MVP functionality first
