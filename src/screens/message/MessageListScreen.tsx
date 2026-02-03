@@ -93,10 +93,102 @@ export function MessageListScreen({ navigation }: any) {
   }, [loadMessages]);
 
   // Handle action button press
-  const handleActionPress = async (message: SystemMessage, action: { label: string; action: string; data?: Record<string, unknown> }) => {
-    console.log('Action pressed:', action);
-    // TODO: Handle action based on action.action
-    Alert.alert('Action', `${action.label} - ${action.action}`);
+  const handleActionPress = async (
+    message: SystemMessage,
+    action: { label: string; action: string; data?: Record<string, unknown> }
+  ) => {
+    const data = action.data;
+    const isRecord = (value: unknown): value is Record<string, unknown> =>
+      typeof value === 'object' && value !== null;
+    const asString = (value: unknown) => (typeof value === 'string' ? value.trim() : undefined);
+    const asNumber = (value: unknown) =>
+      typeof value === 'number' && !Number.isNaN(value) ? value : undefined;
+    const mediaType = isRecord(data) && data.type === 'tv' ? 'tv' : 'movie';
+
+    try {
+      switch (action.action) {
+        case 'open_chat': {
+          const chatId = isRecord(data) ? asString(data.chatId) : undefined;
+          navigation.navigate('Chat', chatId ? { chatId } : undefined);
+          break;
+        }
+        case 'search': {
+          const query = isRecord(data) ? asString(data.query) : undefined;
+          if (!query) {
+            Alert.alert('Action unavailable', 'Missing search query.');
+            return;
+          }
+          navigation.navigate('Media', {
+            screen: 'Search',
+            params: { initialQuery: query },
+          });
+          break;
+        }
+        case 'subscribe': {
+          const tmdbId = isRecord(data) ? asNumber(data.tmdbId) : undefined;
+          if (!tmdbId) {
+            Alert.alert('Action unavailable', 'Missing TMDB ID for subscription.');
+            return;
+          }
+          navigation.navigate('Media', {
+            screen: 'AddSubscribe',
+            params: { tmdbId, mediaType },
+          });
+          break;
+        }
+        case 'media_detail': {
+          const tmdbId = isRecord(data) ? asNumber(data.tmdbId) : undefined;
+          const mediaId = isRecord(data) ? asString(data.mediaId) : undefined;
+          if (!tmdbId && !mediaId) {
+            Alert.alert('Action unavailable', 'Missing media identifiers.');
+            return;
+          }
+          navigation.navigate('Media', {
+            screen: 'MediaDetail',
+            params: { tmdbId, mediaId, type: mediaType },
+          });
+          break;
+        }
+        case 'open_downloads':
+          navigation.navigate('Downloads');
+          break;
+        case 'add_download':
+          navigation.navigate('Downloads', { screen: 'AddDownload' });
+          break;
+        case 'open_subscriptions':
+          navigation.navigate('Subscriptions');
+          break;
+        case 'subscription_detail': {
+          const subscriptionId = isRecord(data) ? asString(data.subscriptionId) : undefined;
+          if (!subscriptionId) {
+            Alert.alert('Action unavailable', 'Missing subscription ID.');
+            return;
+          }
+          navigation.navigate('Subscriptions', {
+            screen: 'SubscribeDetail',
+            params: { subscriptionId },
+          });
+          break;
+        }
+        case 'open_settings':
+          navigation.navigate('Settings');
+          break;
+        case 'open_history':
+          navigation.navigate('Settings', { screen: 'History' });
+          break;
+        case 'open_media_server':
+          navigation.navigate('Settings', { screen: 'MediaServer' });
+          break;
+        case 'dismiss':
+          handleDeleteMessage(message.id);
+          break;
+        default:
+          Alert.alert('Action not supported', `Unsupported action: ${action.action}`);
+      }
+    } catch (error) {
+      console.error('Failed to handle action:', error);
+      Alert.alert('Error', 'Unable to complete this action.');
+    }
   };
 
   // Delete message
