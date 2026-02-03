@@ -11,6 +11,7 @@
     "jsx": "react-native",
     "baseUrl": ".",
     "paths": {
+      "expo-clipboard": ["src/shims/expo-clipboard"],
       "@/*": ["src/*"],
       "@/components/*": ["src/components/*"],
       "@/screens/*": ["src/screens/*"],

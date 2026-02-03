@@ -8,6 +8,7 @@ module.exports = function(api) {
         'module-resolver',
         {
           alias: {
+            'expo-clipboard': './src/shims/expo-clipboard',
             '@': './src',
             '@/components': './src/components',
             '@/screens': './src/screens',
