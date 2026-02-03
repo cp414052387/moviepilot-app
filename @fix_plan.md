@@ -20,6 +20,7 @@
 
 ## Completed
 - [x] Project initialization
+- [x] Add completed download folder open handler with failure feedback
 
 ## Notes
 - Focus on MVP functionality first

@@ -17,6 +17,8 @@ import {
   FlatList,
   RefreshControl,
   Alert,
+  Linking,
+  Platform,
 } from 'react-native';
 import {
   Text,
@@ -120,6 +122,34 @@ export function DownloadListScreen({ navigation }: any) {
         },
       ]
     );
+  };
+
+  const handleOpenFolder = async (item: { name: string; save_path?: string }) => {
+    if (!item.save_path) {
+      Alert.alert('Unavailable', 'No save location found for this download.');
+      return;
+    }
+
+    if (Platform.OS !== 'android') {
+      Alert.alert('Open Folder', `Save location:\n${item.save_path}`);
+      return;
+    }
+
+    const folderUrl = item.save_path.startsWith('file://')
+      ? item.save_path
+      : `file://${item.save_path}`;
+
+    try {
+      const canOpen = await Linking.canOpenURL(folderUrl);
+      if (!canOpen) {
+        Alert.alert('Unable to Open', 'Your device cannot open this folder location.');
+        return;
+      }
+      await Linking.openURL(folderUrl);
+    } catch (error) {
+      console.error('Failed to open folder:', error);
+      Alert.alert('Error', 'Failed to open the folder. Please try again.');
+    }
   };
 
   // Render download item
@@ -238,7 +268,7 @@ export function DownloadListScreen({ navigation }: any) {
                 <IconButton
                   icon="folder-open"
                   size={20}
-                  onPress={() => {/* TODO: Open folder */}}
+                  onPress={() => handleOpenFolder(item)}
                   style={styles.actionIcon}
                 />
                 <IconButton
