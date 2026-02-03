@@ -20,6 +20,7 @@
 
 ## Completed
 - [x] Project initialization
+- [x] Add clipboard paste handling for magnet links
 
 ## Notes
 - Focus on MVP functionality first

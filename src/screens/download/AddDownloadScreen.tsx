@@ -26,6 +26,7 @@ import {
   useTheme,
   IconButton,
 } from 'react-native-paper';
+import * as Clipboard from 'expo-clipboard';
 import { createDownload } from '@/api/download';
 
 type DownloadSource = 'magnet' | 'torrent';
@@ -77,8 +78,28 @@ export function AddDownloadScreen({ navigation }: any) {
   };
 
   const handlePaste = async () => {
-    // TODO: Implement clipboard paste
-    Alert.alert('Coming Soon', 'Clipboard paste will be available soon');
+    try {
+      const clipboardText = (await Clipboard.getStringAsync()).trim();
+
+      if (!clipboardText) {
+        Alert.alert('Clipboard Empty', 'Copy a magnet link to your clipboard and try again.');
+        return;
+      }
+
+      if (!clipboardText.toLowerCase().startsWith('magnet:?')) {
+        Alert.alert(
+          'Invalid Magnet Link',
+          'Clipboard content is not a valid magnet link. Make sure it starts with "magnet:?".'
+        );
+        return;
+      }
+
+      setSource('magnet');
+      setMagnetLink(clipboardText);
+    } catch (error) {
+      console.error('Failed to read clipboard:', error);
+      Alert.alert('Clipboard Error', 'Unable to read from clipboard. Please try again.');
+    }
   };
 
   return (
