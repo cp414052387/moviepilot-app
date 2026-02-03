@@ -28,6 +28,9 @@
 2. **启用 GitHub Actions**
 3. **触发构建**：
    - 推送代码到 main 分支
+   - 若无需改动代码，也可使用空提交触发：
+     - `git commit --allow-empty -m "chore: trigger actions build"`
+     - `git push`
    - 或在 Actions 标签页手动触发 "Run workflow"
 4. **下载 APK**：
    - 进入 Actions 标签页
