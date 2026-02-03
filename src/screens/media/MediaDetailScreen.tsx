@@ -20,6 +20,7 @@ import {
   Image,
   TouchableOpacity,
   Dimensions,
+  Share,
 } from 'react-native';
 import {
   Text,
@@ -29,6 +30,7 @@ import {
   IconButton,
   useTheme,
   ActivityIndicator,
+  Snackbar,
 } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
 import { getTmdbDetails } from '@/api/media';
@@ -54,6 +56,14 @@ export function MediaDetailScreen({ route, navigation }: MediaDetailScreenProps)
   const [media, setMedia] = useState<MediaDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [overviewExpanded, setOverviewExpanded] = useState(false);
+  const [subscribeLoading, setSubscribeLoading] = useState(false);
+  const [downloadLoading, setDownloadLoading] = useState(false);
+  const [shareLoading, setShareLoading] = useState(false);
+  const [favoriteUpdating, setFavoriteUpdating] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarTone, setSnackbarTone] = useState<'info' | 'success' | 'error'>('info');
 
   useEffect(() => {
     loadMediaDetails();
@@ -73,24 +83,103 @@ export function MediaDetailScreen({ route, navigation }: MediaDetailScreenProps)
     }
   };
 
-  const handleSubscribe = () => {
-    // TODO: Implement subscribe action
-    console.log('Subscribe pressed');
+  const showSnackbar = (message: string, tone: 'info' | 'success' | 'error' = 'info') => {
+    setSnackbarMessage(message);
+    setSnackbarTone(tone);
+    setSnackbarVisible(true);
   };
 
-  const handleDownload = () => {
-    // TODO: Implement download action
-    console.log('Download pressed');
+  const handleSubscribe = async () => {
+    if (!tmdbId || !media) {
+      showSnackbar('Missing media details for subscription.', 'error');
+      return;
+    }
+
+    setSubscribeLoading(true);
+    try {
+      navigation.navigate('AddSubscribe', {
+        tmdbId,
+        mediaTitle: media.title,
+        mediaPoster: media.poster_path ? `https://image.tmdb.org/t/p/w342${media.poster_path}` : undefined,
+        mediaType: media.type,
+      });
+      showSnackbar('Opening subscription form...', 'info');
+    } catch (error) {
+      console.error('Failed to open subscribe flow:', error);
+      showSnackbar('Unable to open subscription form.', 'error');
+    } finally {
+      setSubscribeLoading(false);
+    }
   };
 
-  const handleFavorite = () => {
-    // TODO: Implement favorite action
-    console.log('Favorite pressed');
+  const handleDownload = async () => {
+    if (!media) {
+      showSnackbar('Missing media details for download.', 'error');
+      return;
+    }
+
+    setDownloadLoading(true);
+    try {
+      navigation.navigate('Downloads', { screen: 'AddDownload' });
+      showSnackbar('Opening download form...', 'info');
+    } catch (error) {
+      console.error('Failed to open download flow:', error);
+      showSnackbar('Unable to open download form.', 'error');
+    } finally {
+      setDownloadLoading(false);
+    }
   };
 
-  const handleShare = () => {
-    // TODO: Implement share action
-    console.log('Share pressed');
+  const handleFavorite = async () => {
+    if (!media) {
+      showSnackbar('Missing media details to favorite.', 'error');
+      return;
+    }
+
+    setFavoriteUpdating(true);
+    try {
+      setIsFavorite((prev) => {
+        const nextValue = !prev;
+        showSnackbar(
+          nextValue ? 'Added to favorites.' : 'Removed from favorites.',
+          'success'
+        );
+        return nextValue;
+      });
+    } catch (error) {
+      console.error('Failed to update favorite:', error);
+      showSnackbar('Unable to update favorites.', 'error');
+    } finally {
+      setFavoriteUpdating(false);
+    }
+  };
+
+  const handleShare = async () => {
+    if (!media || !tmdbId) {
+      showSnackbar('Missing media details to share.', 'error');
+      return;
+    }
+
+    setShareLoading(true);
+    try {
+      const shareUrl = `https://www.themoviedb.org/${media.type}/${tmdbId}`;
+      const result = await Share.share({
+        title: media.title,
+        message: `${media.title} (${media.year || 'N/A'})\n${shareUrl}`,
+        url: shareUrl,
+      });
+
+      if (result.action === Share.sharedAction) {
+        showSnackbar('Share link sent.', 'success');
+      } else if (result.action === Share.dismissedAction) {
+        showSnackbar('Share dismissed.', 'info');
+      }
+    } catch (error) {
+      console.error('Failed to share media:', error);
+      showSnackbar('Unable to share this title.', 'error');
+    } finally {
+      setShareLoading(false);
+    }
   };
 
   if (loading) {
@@ -292,6 +381,8 @@ export function MediaDetailScreen({ route, navigation }: MediaDetailScreenProps)
           icon="plus"
           style={styles.actionButton}
           contentStyle={styles.actionButtonContent}
+          loading={subscribeLoading}
+          disabled={subscribeLoading || !media}
         >
           Subscribe
         </Button>
@@ -301,22 +392,38 @@ export function MediaDetailScreen({ route, navigation }: MediaDetailScreenProps)
           icon="download"
           style={styles.actionButton}
           contentStyle={styles.actionButtonContent}
+          loading={downloadLoading}
+          disabled={downloadLoading || !media}
         >
           Download
         </Button>
         <IconButton
-          icon="heart-outline"
+          icon={isFavorite ? 'heart' : 'heart-outline'}
           size={24}
           onPress={handleFavorite}
           style={styles.iconButton}
+          iconColor={isFavorite ? theme.colors.error : theme.colors.onSurface}
+          disabled={favoriteUpdating || !media}
         />
         <IconButton
           icon="share-variant"
           size={24}
           onPress={handleShare}
           style={styles.iconButton}
+          disabled={shareLoading || !media}
         />
       </View>
+      <Snackbar
+        visible={snackbarVisible}
+        onDismiss={() => setSnackbarVisible(false)}
+        duration={2500}
+        style={[
+          snackbarTone === 'error' && { backgroundColor: theme.colors.error },
+          snackbarTone === 'success' && { backgroundColor: theme.colors.primary },
+        ]}
+      >
+        {snackbarMessage}
+      </Snackbar>
     </View>
   );
 }

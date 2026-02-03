@@ -11,6 +11,7 @@
 - [ ] Implement core business logic
 - [ ] Add configuration management
 - [ ] Create user documentation
+- [x] Implement media detail quick action handlers
 
 ## Low Priority
 - [ ] Performance optimization
