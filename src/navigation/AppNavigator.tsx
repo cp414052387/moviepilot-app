@@ -12,7 +12,8 @@ import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Icon } from 'react-native-paper';
+import { StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Icon, Text, useTheme } from 'react-native-paper';
 import { useAuthStore } from '@/stores/authStore';
 import { LoginScreen } from '@/screens/auth/LoginScreen';
 import { HomeScreen } from '@/screens/home/HomeScreen';
@@ -301,6 +302,7 @@ function AuthStack() {
  */
 export function AppNavigator() {
   const { isAuthenticated, checkAuth, isLoading } = useAuthStore();
+  const theme = useTheme();
 
   useEffect(() => {
     // Check auth status on mount
@@ -308,8 +310,22 @@ export function AppNavigator() {
   }, []);
 
   if (isLoading) {
-    // TODO: Show proper loading screen
-    return null;
+    return (
+      <View
+        style={[styles.loadingContainer, { backgroundColor: theme.colors.background }]}
+        accessible
+        accessibilityRole="progressbar"
+        accessibilityLabel="Loading application"
+      >
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+        <Text
+          variant="bodyMedium"
+          style={[styles.loadingText, { color: theme.colors.onSurfaceVariant }]}
+        >
+          Loading your experience...
+        </Text>
+      </View>
+    );
   }
 
   return (
@@ -318,3 +334,16 @@ export function AppNavigator() {
     </NavigationContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  loadingText: {
+    marginTop: 12,
+    textAlign: 'center',
+  },
+});
